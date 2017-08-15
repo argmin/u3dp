@@ -36,8 +36,8 @@ def make_yaml_dict(test_scene_num, arm_name, object_name, pick_pose, place_pose)
     yaml_dict["test_scene_num"] = int(test_scene_num.data)
     yaml_dict["arm_name"]  = str(arm_name.data)
     yaml_dict["object_name"] = str(object_name.data)
-    yaml_dict["pick_pose"] = str(message_converter.convert_ros_message_to_dictionary(pick_pose))
-    yaml_dict["place_pose"] = str(message_converter.convert_ros_message_to_dictionary(place_pose))
+    yaml_dict["pick_pose"] = message_converter.convert_ros_message_to_dictionary(pick_pose)
+    yaml_dict["place_pose"] = message_converter.convert_ros_message_to_dictionary(place_pose)
     return yaml_dict
 
 # Helper function to output to yaml file
@@ -66,6 +66,13 @@ def pcl_callback(pcl_msg):
     passthru.set_filter_limits(axis_min, axis_max)
     pcl_vox_passthru_filtered = passthru.filter()
 
+    passthru = pcl_vox_passthru_filtered.make_passthrough_filter()
+    filtered_axis = 'y'
+    passthru.set_filter_field_name(filtered_axis)
+    axis_min, axis_max = -0.5, 0.5
+    passthru.set_filter_limits(axis_min, axis_max)
+    pcl_vox_passthru_filtered = passthru.filter()
+
     # RANSAC Plane Segmentation
     seg = pcl_vox_passthru_filtered.make_segmenter()
     seg.set_model_type(pcl.SACMODEL_PLANE)
@@ -88,7 +95,7 @@ def pcl_callback(pcl_msg):
 
     ec.set_ClusterTolerance(0.015)
     ec.set_MinClusterSize(17)
-    ec.set_MaxClusterSize(1300)
+    ec.set_MaxClusterSize(1100)
 
     # Search the k-d tree for clusters
     ec.set_SearchMethod(tree)
@@ -97,7 +104,6 @@ def pcl_callback(pcl_msg):
 
     # Assign a color corresponding to each segmented object in scene
     cluster_color = get_color_list(len(cluster_indices))
-    print(len(cluster_indices))
     color_cluster_point_list = []
     for j, indices in enumerate(cluster_indices):
         for i, indice in enumerate(indices):
@@ -183,45 +189,46 @@ def pr2_mover(object_list):
     for dropbox in dropboxes:
         dropbox_group[dropbox['group']] = dropbox
 
-    for i, object in enumerate(object_list):
+    for object in object_list:
         # Get the PointCloud for a given object and obtain it's centroid
         points_arr = ros_to_pcl(object.cloud).to_array()
         centroid = np.mean(points_arr, axis=0)[:3]
         pick_pose = Pose()
-        pick_pose.position.x = centroid[0]
-        pick_pose.position.y = centroid[1]
-        pick_pose.position.z = centroid[2]
+        pick_pose.position.x = float(centroid[0])
+        pick_pose.position.y = float(centroid[1])
+        pick_pose.position.z = float(centroid[2])
 
         # Create 'place_pose' for the object
         place_pose = Pose()
-        place_position = dropbox_group[object_group[object.label]]['position']
+        # Place position for items not in list is [0,0,0]
+        place_position = dropbox_group.get(object_group.get(object.label, 'unknown'), {}).get('position', [0, 0, 0])
         place_pose.position.x = place_position[0]
         place_pose.position.y = place_position[1]
         place_pose.position.z = place_position[2]
 
         # Assign the arm to be used for pick_place
         arm_name = String()
-        arm_name.data = dropbox_group[object_group[object.label]]['name']
+        arm_name.data = dropbox_group.get(object_group.get(object.label, 'unknown'), {}).get('name', 'unknown')
 
         object_name = String()
         object_name.data = object.label
 
         test_scene_num = Int32()
-        test_scene_num.data = i
+        test_scene_num.data = 1
 
-        # TODO: Create a list of dictionaries (made with make_yaml_dict()) for later output to yaml format
+        # Create a list of dictionaries (made with make_yaml_dict()) for later output to yaml format
+        action = make_yaml_dict(test_scene_num, object_name, arm_name, pick_pose, place_pose)
+        dict_list.append(action)
 
         # Wait for 'pick_place_routine' service to come up
         rospy.wait_for_service('pick_place_routine')
-        action = make_yaml_dict(test_scene_num, object_name, arm_name, pick_pose, place_pose)
-        dict_list.append(action)
         try:
             pick_place_routine = rospy.ServiceProxy('pick_place_routine', PickPlace)
 
-            # Insert your message variables to be sent as a service request
-            #resp = pick_place_routine(test_scene_num, object_name, arm_name, pick_pose, place_pose)
-
-            #print("Response: ", resp.success)
+            if False:
+                # Insert your message variables to be sent as a service request
+                resp = pick_place_routine(test_scene_num, object_name, arm_name, pick_pose, place_pose)
+                print("Response: ", resp.success)
 
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
@@ -251,8 +258,6 @@ if __name__ == '__main__':
     encoder = LabelEncoder()
     encoder.classes_ = model['classes']
     scaler = model['scaler']
-
-    do_print = True
 
     # Initialize color_list
     get_color_list.color_list = []

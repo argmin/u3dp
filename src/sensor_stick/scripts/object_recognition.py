@@ -60,7 +60,7 @@ def pcl_callback(pcl_msg):
 	
 	ec.set_ClusterTolerance(0.015)
 	ec.set_MinClusterSize(17)
-	ec.set_MaxClusterSize(1300)
+	ec.set_MaxClusterSize(1100)
 	
 	# Search the k-d tree for clusters
 	ec.set_SearchMethod(tree)

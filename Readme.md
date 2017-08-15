@@ -32,6 +32,20 @@ Here we put together the steps from Exercise 1 to 3 to perform object recognitio
 - In addition the pick and place location on each object is sent to robot to perform the pick and place task.
 
 
+#### Results
+Following are the results from training and evaluating classifier, & confusion matrix images are in the repo.
 
+```sh
+Features in Training Set: 800
+Invalid Features in Training set: 4
+Scores: [ 0.9375      0.94339623  0.94968553  0.94968553  0.9245283 ]
+Accuracy: 0.94 (+/- 0.02)
+accuracy score: 0.940954773869
+````
 
+### Code
+Here's the code of interest
+- `src/RoboND-Perception-Project/pr2_robot/scripts/train_svm.py`
+- `src/RoboND-Perception-Project/pr2_robot/scripts/perception_pr2.py`
+- `src/RoboND-Perception-Project/pr2_robot/scripts/capture_features.py`
 

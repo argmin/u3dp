@@ -8,9 +8,9 @@ In this project we focus on perception principle of robotics, the sensor used in
 
 #### Exercise 1
 This exercise introduces us to the feature extraction from an image. Here we begin applying following steps
-- Downsample 3D point cloud data voxel grid downsampling
-- Perform pass through filtering for the output from previous steps along the axis to keep relevant data. Note that in the project we perform filtering along `y` & `z` axes, to filter out edge of the basket, thanks to Udacity Slack Community.
-- We now perform plane fitting to previous output to inliers (table) and outlier (objects)
+- Downsample 3D point cloud data voxel grid downsampling, the parameter to tune in this case was `LEAF_SIZE`
+- Perform pass through filtering for the output from previous steps along the axis to keep relevant data. Note that in the project we perform filtering along `y` & `z` axes, to filter out edge of the basket, thanks to Udacity Slack Community. The parameter to tune here were the axes along which to filter and the accepted intervals.
+- We now perform plane fitting to previous output to inliers (table) and outlier (objects), we here select the max distance between the point to be `1cm`
 
 
 #### Exercise 2
@@ -19,16 +19,16 @@ In this exercise for the objects we have detected we want to identify the featur
 #### Exercise 3
 
 - In this exercise we spin up the project in training mode and capture the features like color and normal histogram for an object in various orientations.
-- We split the data into training and test set by random sample and train the classifier
+- We split the data into training and test set by random sample and train the classifier. The classifier chosen for this project was `SVM` with linear kernel.
 - We evaluate the model based on confusion matrix & accuracy.
-
+- It's found that by increasing the size of the trainign dataset improved the accuracy.
 
 #### Project
 Here we put together the steps from Exercise 1 to 3 to perform object recognition and drop the objects into right basket.
 - We first spin up the ROS simulation in training mode and present the objects in this project in various orientations and collect large sample of trainign data.
 - We split the data into training and test set by random sample and train the classifier
 - We now launch PR2 robot in `pick_place_project` mode, extract the features as described in `Exercise 1 to 3` and classify the objects.
-- After classification we find the centroid for each object and describe the output in `output_1.yaml`, `output_2.yaml`output_3.yaml` for senarios `test1.world`, `test2.world`, `test3.world`.
+- After classification we find the centroid for each object and describe the output in `output_1.yaml`, `output_2.yaml`, `output_3.yaml` for senarios `test1.world`, `test2.world`, `test3.world`.
 - In addition the pick and place location on each object is sent to robot to perform the pick and place task.
 
 
@@ -42,6 +42,12 @@ Scores: [ 0.9375      0.94339623  0.94968553  0.94968553  0.9245283 ]
 Accuracy: 0.94 (+/- 0.02)
 accuracy score: 0.940954773869
 ````
+
+Below is th econfusion matrix with raw data point and normalized matrix.
+
+![Confusion matrix](https://github.com/argmin/u3dp/blob/master/confusion_matrix.png)
+
+![Normalized Confusion matrix](https://github.com/argmin/u3dp/blob/master/confusion_matrix_normalized.png)
 
 ### Code
 Here's the code of interest

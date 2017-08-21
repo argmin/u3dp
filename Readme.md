@@ -49,6 +49,14 @@ Below is th econfusion matrix with raw data point and normalized matrix.
 
 ![Normalized Confusion matrix](https://github.com/argmin/u3dp/blob/master/confusion_matrix_normalized.png)
 
+
+Below are the images for classification done in while running different test cases of pick and place.
+
+![World 1](https://github.com/argmin/u3dp/blob/master/world1.png)
+![World 2](https://github.com/argmin/u3dp/blob/master/world2.png)
+![World 3](https://github.com/argmin/u3dp/blob/master/world3.png)
+
+
 ### Code
 Here's the code of interest
 - `src/RoboND-Perception-Project/pr2_robot/scripts/train_svm.py`
